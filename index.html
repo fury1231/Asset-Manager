@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>財產清冊掃描系統</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.0.0/jsQR.min.js"></script>
+    <style>
+        video { width: 100%; max-width: 400px; display: none; }
+        input { display: block; margin: 10px 0; padding: 8px; width: 100%; }
+        button { padding: 10px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <h2>財產清冊掃描系統</h2>
+
+    <button id="startScan">開啟相機掃描 QR Code</button>
+    <button id="stopScan" style="display: none;">停止相機</button>
+    
+    <video id="video" autoplay></video>
+    <canvas id="canvas" style="display: none;"></canvas>
+    
+    <h3>資產資訊</h3>
+    <input id="assetId" placeholder="財產編號" readonly>
+    <input id="assetName" placeholder="財產名稱">
+    <input id="user" placeholder="當前使用者">
+    <input id="location" placeholder="存放位置">
+    <input id="status" placeholder="狀態">
+    <button onclick="updateAsset()">更新資產</button>
+    
+    <script>
+        const video = document.getElementById("video");
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
+        const startScanBtn = document.getElementById("startScan");
+        const stopScanBtn = document.getElementById("stopScan");
+        let stream = null;
+        let scanning = false;
+
+        const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyYc5BdKtGcOoRThRYjkbqJxXlrOfpvR4x2MDg7IB-wIUAywKM42zcXA2YE96Fb1AdD_A/exec";
+
+        // 🚀 點擊按鈕啟動相機掃描
+        startScanBtn.addEventListener("click", () => {
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(s => {
+                    stream = s;
+                    video.srcObject = s;
+                    video.style.display = "block";
+                    startScanBtn.style.display = "none";
+                    stopScanBtn.style.display = "inline-block";
+                    scanning = true;
+                    scanQRCode();
+                })
+                .catch(error => console.error("❌ 無法開啟相機", error));
+        });
+
+        // 🚀 停止相機
+        stopScanBtn.addEventListener("click", () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+            video.style.display = "none";
+            startScanBtn.style.display = "inline-block";
+            stopScanBtn.style.display = "none";
+            scanning = false;
+        });
+
+        // 🚀 掃描 QR Code
+        function scanQRCode() {
+            if (!scanning) return;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let code = jsQR(imageData.data, canvas.width, canvas.height);
+
+            if (code) {
+                stopScanBtn.click(); // 停止相機
+                fetchAssetInfo(code.data);
+            } else {
+                setTimeout(scanQRCode, 500); // 每 500ms 掃描一次
+            }
+        }
+
+        // 🚀 取得資產資訊
+        function fetchAssetInfo(assetId) {
+            fetch(`${GAS_API_URL}?action=getAssetInfo&assetId=${assetId}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("assetId").value = data.assetId;
+                    document.getElementById("assetName").value = data.assetName;
+                    document.getElementById("user").value = data.user;
+                    document.getElementById("location").value = data.location;
+                    document.getElementById("status").value = data.status;
+                })
+                .catch(error => console.error("❌ 錯誤", error));
+        }
+
+        // 🚀 更新資產資訊
+        function updateAsset() {
+            let assetId = document.getElementById("assetId").value;
+            let assetName = document.getElementById("assetName").value;
+            let user = document.getElementById("user").value;
+            let location = document.getElementById("location").value;
+            let status = document.getElementById("status").value;
+
+            fetch(`${GAS_API_URL}?action=updateAssetInfo&assetId=${assetId}&assetName=${assetName}&user=${user}&location=${location}&status=${status}`)
+                .then(response => response.text())
+                .then(data => alert(data))
+                .catch(error => console.error("❌ 錯誤", error));
+        }
+    </script>
+
+</body>
+</html>
