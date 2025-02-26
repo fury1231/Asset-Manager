@@ -28,31 +28,35 @@
     <input id="location" placeholder="存放位置">
     <input id="status" placeholder="狀態">
     <button onclick="updateAsset()">更新資產</button>
-    
+
+    <p id="errorMessage" style="color: red;"></p> <!-- 顯示錯誤資訊 -->
+
     <script>
         const video = document.getElementById("video");
         const canvas = document.getElementById("canvas");
         const ctx = canvas.getContext("2d");
         const startScanBtn = document.getElementById("startScan");
         const stopScanBtn = document.getElementById("stopScan");
+        const errorMessage = document.getElementById("errorMessage");
         let stream = null;
         let scanning = false;
 
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbyYc5BdKtGcOoRThRYjkbqJxXlrOfpvR4x2MDg7IB-wIUAywKM42zcXA2YE96Fb1AdD_A/exec";
 
         // 🚀 點擊按鈕啟動相機掃描
-        startScanBtn.addEventListener("click", () => {
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(s => {
-                    stream = s;
-                    video.srcObject = s;
-                    video.style.display = "block";
-                    startScanBtn.style.display = "none";
-                    stopScanBtn.style.display = "inline-block";
-                    scanning = true;
-                    scanQRCode();
-                })
-                .catch(error => console.error("❌ 無法開啟相機", error));
+        startScanBtn.addEventListener("click", async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = stream;
+                video.style.display = "block";
+                startScanBtn.style.display = "none";
+                stopScanBtn.style.display = "inline-block";
+                scanning = true;
+                scanQRCode(); // 開始掃描
+            } catch (error) {
+                errorMessage.textContent = "❌ 無法開啟相機，請檢查瀏覽器權限";
+                console.error("❌ 無法開啟相機", error);
+            }
         });
 
         // 🚀 停止相機
@@ -69,17 +73,22 @@
         // 🚀 掃描 QR Code
         function scanQRCode() {
             if (!scanning) return;
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let code = jsQR(imageData.data, canvas.width, canvas.height);
+            try {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                let code = jsQR(imageData.data, canvas.width, canvas.height);
 
-            if (code) {
-                stopScanBtn.click(); // 停止相機
-                fetchAssetInfo(code.data);
-            } else {
-                setTimeout(scanQRCode, 500); // 每 500ms 掃描一次
+                if (code) {
+                    stopScanBtn.click(); // 停止相機
+                    fetchAssetInfo(code.data); // 取得資產資訊
+                } else {
+                    setTimeout(scanQRCode, 500); // 每 500ms 再次掃描
+                }
+            } catch (error) {
+                errorMessage.textContent = "❌ 掃描 QR Code 失敗，請重試";
+                console.error("❌ 掃描失敗", error);
             }
         }
 
@@ -93,8 +102,12 @@
                     document.getElementById("user").value = data.user;
                     document.getElementById("location").value = data.location;
                     document.getElementById("status").value = data.status;
+                    errorMessage.textContent = ""; // 清除錯誤訊息
                 })
-                .catch(error => console.error("❌ 錯誤", error));
+                .catch(error => {
+                    errorMessage.textContent = "❌ 無法取得資產資訊";
+                    console.error("❌ 取得資產資訊失敗", error);
+                });
         }
 
         // 🚀 更新資產資訊
@@ -108,7 +121,10 @@
             fetch(`${GAS_API_URL}?action=updateAssetInfo&assetId=${assetId}&assetName=${assetName}&user=${user}&location=${location}&status=${status}`)
                 .then(response => response.text())
                 .then(data => alert(data))
-                .catch(error => console.error("❌ 錯誤", error));
+                .catch(error => {
+                    errorMessage.textContent = "❌ 更新失敗";
+                    console.error("❌ 更新失敗", error);
+                });
         }
     </script>
 
