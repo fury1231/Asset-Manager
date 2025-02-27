@@ -16,8 +16,6 @@
         import QrScanner from "https://unpkg.com/qr-scanner@1.4.2/qr-scanner.min.js";
         
 
-
-
         let videoElem, scanner;
         const startScanBtn = document.getElementById("startScan");
         const stopScanBtn = document.getElementById("stopScan");
@@ -86,7 +84,7 @@
                     document.getElementById("user").value = data.user || "";
                     document.getElementById("location").value = data.location || "";
 
-                    // ✅ 讓狀態下拉選單預設選擇 API 回傳的值
+                    // 讓狀態下拉選單預設選擇 API 回傳的值
                     const statusSelect = document.getElementById("status");
                     statusSelect.value = data.status || "正常";
                 })
@@ -100,7 +98,7 @@
         document.getElementById("stopScan").addEventListener("click", stopScanner);
     </script>
 
-    <!-- ✅ 修正 updateAsset()，讓 HTML 可以調用 -->
+    <!-- 修正 updateAsset()，讓 HTML 可以調用 -->
     <script>
         function updateAsset() {
             let assetId = document.getElementById("assetId").value;
@@ -109,7 +107,7 @@
             let location = document.getElementById("location").value;
             let status = document.getElementById("status").value;
 
-            // ✅ 從 Sheets 取得 QR Code（如果已存在）
+            // 從 Sheets 取得 QR Code（如果已存在）
             fetch(`${window.GAS_API_URL}?action=getAssetInfo&assetId=${encodeURIComponent(assetId)}`)
                 .then(response => response.json())
                 .then(data => {
@@ -190,7 +188,7 @@
             section.style.display = currentDisplay === "none" ? "block" : "none";
 
             if (section.style.display === "block") {
-                fetchNextAssetId(); // 🚀 取得下一個可用的 ASSET ID
+                fetchNextAssetId(); //取得下一個可用的 ASSET ID
             }
         }
         function togglePrintQrSection() {
@@ -334,7 +332,7 @@
                 return;
             }
 
-            // ✅ 生成 QR Code URL
+            // 生成 QR Code URL
             let qrCodeUrl = `https://quickchart.io/qr?text=${encodeURIComponent(assetId)}&size=150`;
 
             fetch(`${window.GAS_API_URL}?action=updateAssetInfo&assetId=${encodeURIComponent(assetId)}&assetName=${encodeURIComponent(assetName)}&user=${encodeURIComponent(user)}&location=${encodeURIComponent(location)}&status=${encodeURIComponent(status)}&qrCode=${encodeURIComponent(qrCodeUrl)}`)
@@ -342,7 +340,7 @@
                 .then(data => {
                     alert(data);
 
-                    // ✅ 確保 QR Code 圖片存在並顯示
+                    // 確保 QR Code 圖片存在並顯示
                     let qrCodeImg = document.getElementById("qrCodeImage");
                     if (qrCodeImg) {
                         qrCodeImg.src = qrCodeUrl;
@@ -351,7 +349,7 @@
                         console.error("❌ 錯誤：找不到 qrCodeImage 元素");
                     }
 
-                    // // ✅ 延遲關閉新建資產區，避免 QR Code 消失太快
+                    // // 延遲關閉新建資產區，避免 QR Code 消失太快
                     // setTimeout(() => {
                     //     toggleNewAssetSection();
                     // }, 2000);
@@ -445,7 +443,7 @@
     <input id="user" class="form-control my-3" placeholder="當前使用者">
     <input id="location" class="form-control my-3" placeholder="存放位置">
 
-    <!-- ✅ 改成下拉式選單 -->
+    <!-- 改成下拉式選單 -->
     <select id="status" class="form-select my-2">
         <option value="正常">正常</option>
         <option value="維修中">維修中</option>
@@ -475,17 +473,6 @@
     <div id="printQrSection" class="card shadow p-3 mt-3">
         <h4 class="text-center">📄 列印 QR Code</h4>
     
-        <!-- ✅ 輸入 ASSET ID，讓使用者選擇要列印哪個 QR Code -->
-        <!-- <input id="printAssetId" class="form-control my-2" placeholder="輸入財產編號"> -->
-        
-        <!-- ✅ 顯示對應的 QR Code -->
-        <!-- <img id="printQrCodeImage" src="" alt="QR Code" class="d-block mx-auto mt-3" style="display: none; width: 150px;"> -->
-    
-        <!-- ✅ 按鈕：產生 QR Code -->
-        <!-- <button class="btn btn-info w-100 my-2" onclick="generatePrintQrCode()">🔍 產生 QR Code</button> -->
-    
-        <!-- ✅ 按鈕：列印 QR Code -->
-        <!-- <button class="btn btn-success w-100 my-2" onclick="printQrCode()">🖨 列印 QR Code</button> -->
 
         <input id="startAssetNum" class="form-control my-2" placeholder="開始編號 (0001開始)">
         <input id="endAssetNum" class="form-control my-2" placeholder="結束編號 (比如0010)">
