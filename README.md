@@ -6,7 +6,7 @@
 - **Bootstrap 5** 
 - **QrScanner[https://www.npmjs.com/package/qr-scanner]**
 
-
+---
 這是一款基於 **QR Code** 的財產管理系統，能夠掃描、編輯、列印財產標籤，並透過 Google Sheets 作為後端儲存數據。
 將 Excel (XLSX) 檔案 上傳至 Google Drive，並透過 Google Apps Script (GAS) 建立 API，再將 API Key 整合至 script.js 進行存取。
 **（適用於 企業內部網路 或 個人使用，確保資料安全）**
