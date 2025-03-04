@@ -1,4 +1,4 @@
-window.GAS_API_URL = "填入你的API";
+window.GAS_API_URL = "填入你的GAS API網址";
 // <!-- 修正 updateAsset()，讓 HTML 可以調用 -->
 function updateAsset() {
     let assetId = document.getElementById("assetId").value;
