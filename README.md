@@ -1,10 +1,10 @@
-# 財產清冊掃描系統
+# AssetGo 財產管理系統
 
 ## 🛠 技術棧
 - **HTML5 + CSS3** 
 - **JavaScript (ES6)** 
 - **Bootstrap 5** 
-- **(QrScanner)[https://www.npmjs.com/package/qr-scanner]**
+- **QrScanner[https://www.npmjs.com/package/qr-scanner]**
 
 
 這是一款基於 **QR Code** 的財產管理系統，能夠掃描、編輯、列印財產標籤，並透過 Google Sheets 作為後端儲存數據。
